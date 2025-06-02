@@ -5,24 +5,16 @@ from flask_migrate import Migrate
 import bcrypt
 from datetime import datetime
 
-
-#============================================================== Configuration ==============================================================
-class Config:
-    SECRET_KEY = 'parking_app'
-    BASEDIR = os.path.abspath(os.path.dirname(__file__))
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(BASEDIR, 'instance', 'parking.db')
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-
-#============================================================== Flask App Setup ==============================================================
 app = Flask(__name__)
-app.config.from_object(Config)
+app.config['SECRET_KEY'] = 'parking_app'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.root_path, 'instance', 'parking.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 #=============================================================== Database Setup ==============================================================
 db = SQLAlchemy()
 db.init_app(app)
 migrate = Migrate(app, db)
 
-# ============================================================== MODELS SETUP ==============================================================
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(60), unique=True, nullable=False)
@@ -45,9 +37,6 @@ class ParkingLot(db.Model):
     number_of_spots = db.Column(db.Integer, nullable=False)
     spots = db.relationship('ParkingSpot', backref='parking_lot', lazy=True, cascade="all, delete-orphan")
     status = db.Column(db.String(20), nullable=False, default='Available')
-
-    def __repr__(self):
-        return f'<ParkingLot {self.prime_location_name}>'
 
 class ParkingSpot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -92,7 +81,6 @@ with app.app_context():
         db.session.commit()
         print("Created default admin user (username: admin, password: admin)")
 
-#<------------------------------------------------------------------ HOME PAGE ----------------------------------------------------------------------->
 @app.route('/')
 def index():
     if 'user_id' in session:
@@ -132,7 +120,7 @@ def register():
     flash('Registration successful! Please login.', 'success')
     return redirect(url_for('login'))
 
-#<------------------------------------------------------------ USER LOGIN --------------------------------------------------------->
+#<------------------------------------------------------------ USER AND ADMIN LOGIN --------------------------------------------------------->
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if 'user_id' in session:
@@ -167,7 +155,7 @@ def login():
         flash('Invalid username or password.', 'danger')
         return redirect(url_for('login'))
 
-#<------------------------------------------------------------ USER LOGOUT --------------------------------------------------------->
+#<------------------------------------------------------------ USER AND ADMIN LOGOUT --------------------------------------------------------->
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)

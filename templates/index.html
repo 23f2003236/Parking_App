@@ -1,10 +1,118 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Document</title>
-</head>
-<body>
-    <h1>hello this is first app</h1>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block title %}Welcome to Smart Parking System{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container text-center">
+        <h1>Smart Parking Management System</h1>
+        <p class="lead mb-4">The most efficient way to manage your parking spaces and save time</p>
+        <div class="mt-5">
+            <a href="{{ url_for('login') }}" class="btn btn-3d primary me-3 " style="background-color: #6BB6FF; color: white; border: none; padding: 12px 24px; text-decoration: none; border-radius: 5px;">
+                <i class="fas fa-sign-in-alt"></i>
+                Login
+            </a>
+            <a href="{{ url_for('register') }}" class="btn btn-3d success" style="background-color: #90EE90; color: white; border: none; padding: 12px 24px; text-decoration: none; border-radius: 5px;">
+                <i class="fas fa-user-plus"></i>
+                Register Now
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Counter -->
+<section class="container stats-counter">
+    <div class="row">
+        <div class="col-md-4 counter-item">
+            <span class="counter-number">250+</span>
+            <span class="counter-label">Daily Users</span>
+        </div>
+        <div class="col-md-4 counter-item">
+            <span class="counter-number">98%</span>
+            <span class="counter-label">Customer Satisfaction</span>
+        </div>
+        <div class="col-md-4 counter-item">
+            <span class="counter-number">15+</span>
+            <span class="counter-label">Years Experience</span>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <h2 class="text-center mb-5">Why Choose Our Parking System?</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-clock text-primary"></i>
+                    </div>
+                    <h3 class="feature-title">Save Time</h3>
+                    <p>No more circling around looking for parking spaces. Our system shows you available spots in real-time.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt text-success"></i>
+                    </div>
+                    <h3 class="feature-title">Enhanced Security</h3>
+                    <p>Our parking areas are monitored 24/7 with security cameras and personnel for your vehicle's safety.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt text-info"></i>
+                    </div>
+                    <h3 class="feature-title">Easy to Use</h3>
+                    <p>Our user-friendly interface makes it simple to reserve, track, and manage your parking experience.</p>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-money-bill-wave text-warning"></i>
+                    </div>
+                    <h3 class="feature-title">Cost Effective</h3>
+                    <p>Competitive pricing with special discounts for regular users and long-term parking needs.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-history text-secondary"></i>
+                    </div>
+                    <h3 class="feature-title">Parking History</h3>
+                    <p>Keep track of all your parking activities and expenses with detailed history and reports.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset text-danger"></i>
+                    </div>
+                    <h3 class="feature-title">24/7 Support</h3>
+                    <p>Our customer support team is available round the clock to assist you with any issues.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="container text-center my-5">
+    <div class="card-3d p-5">
+        <h2 class="mb-4">Ready to experience hassle-free parking?</h2>
+        <p class="lead mb-4">Join over 1,000 satisfied customers who have transformed their parking experience.</p>
+        <a href="{{ url_for('register') }}" class="btn btn-3d primary" style="background-color: #28a745; color: white; border: none; padding: 12px 24px; text-decoration: none; border-radius: 5px;">
+            <i class="fas fa-rocket"></i>
+            Get Started Today
+        </a>
+    </div>
+</section>
+{% endblock %}

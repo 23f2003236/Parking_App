@@ -1,30 +1,62 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Register{% endblock %}
+{% block title %}Register - Vehicle Parking System{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6">
-        <h2 class="mb-4">Register</h2>
-        <form method="POST" action="">
+        <h2 class="text-center mb-4">
+            <i class="fas fa-user-plus text-primary me-2"></i>
+            User Signup
+        </h2>
+        <form method="POST" action="{{ url_for('register') }}">
             <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
+                <label for="username" class="form-label">
+                    <i class="fas fa-user me-1"></i>
+                    Username
+                </label>
                 <input type="text" class="form-control" id="username" name="username" required>
             </div>
             <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email" required>
-            </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
+                <label for="password" class="form-label">
+                    <i class="fas fa-lock me-1"></i>
+                    Password
+                </label>
                 <input type="password" class="form-control" id="password" name="password" required>
             </div>
             <div class="mb-3">
-                <label for="confirm_password" class="form-label">Confirm Password</label>
-                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                <label for="email" class="form-label">
+                    <i class="fas fa-envelope me-1"></i>
+                    Email
+                </label>
+                <input type="email" class="form-control" id="email" name="email" required>
             </div>
-            <button type="submit" class="btn btn-primary">Register</button>
+            <div class="mb-3">
+                <label for="phone" class="form-label">
+                    <i class="fas fa-phone me-1"></i>
+                    Phone
+                </label>
+                <input type="tel" class="form-control" id="phone" name="phone">
+            </div>
+            <div class="mb-3">
+                <label for="address" class="form-label">
+                    <i class="fas fa-home me-1"></i>
+                    Address
+                </label>
+                <textarea class="form-control" id="address" name="address" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-user-plus text-white me-2"></i>
+                Register
+            </button>
         </form>
+        <p class="text-center mt-3">
+            Already have an account? 
+            <a href="{{ url_for('login') }}">
+                <i class="fas fa-sign-in-alt me-1"></i>
+                Login here
+            </a>
+        </p>
     </div>
 </div>
 {% endblock %}
