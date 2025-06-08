@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block title %}Summary Reports - Admin - Vehicle Parking System{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">
+    <i class="fas fa-chart-bar text-primary me-2"></i>
+    Summary Reports
+</h1>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">
+                <i class="fas fa-chart-pie me-2"></i>
+                Overall Statistics
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <p class="mb-2">
+                            <i class="fas fa-parking text-info me-2"></i>
+                            <strong>Total Parking Lots:</strong> 
+                            <span class="badge bg-info">{{ total_lots }}</span>
+                        </p>
+                    </div>
+                    <div class="col-12">
+                        <p class="mb-2">
+                            <i class="fas fa-th text-secondary me-2"></i>
+                            <strong>Total Parking Spots:</strong> 
+                            <span class="badge bg-secondary">{{ total_spots }}</span>
+                        </p>
+                    </div>
+                    <div class="col-12">
+                        <p class="mb-2">
+                            <i class="fas fa-car text-danger me-2"></i>
+                            <strong>Currently Occupied Spots:</strong> 
+                            <span class="badge bg-danger">{{ occupied_spots }}</span>
+                        </p>
+                    </div>
+                    <div class="col-12">
+                        <p class="mb-2">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Currently Available Spots:</strong> 
+                            <span class="badge bg-success">{{ available_spots }}</span>
+                        </p>
+                    </div>
+                    <div class="col-12">
+                        <p class="mb-0">
+                            <i class="fas fa-users text-warning me-2"></i>
+                            <strong>Total Registered Users (Non-Admin):</strong> 
+                            <span class="badge bg-warning text-dark">{{ total_users }}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">
+                <i class="fas fa-rupee-sign me-2"></i>
+                Revenue
+            </div>
+            <div class="card-body text-center">
+                <div class="display-6 text-success mb-3">
+                    <i class="fas fa-coins me-2"></i>
+                    {{ total_revenue|currency }}
+                </div>
+                <p class="text-muted mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Total Revenue from Completed Reservations
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row">
+    <div class="col-md-12 mb-6">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <i class="fas fa-chart-pie me-2"></i>
+                Revenue by Parking Lot
+            </div>
+            <div class="card-body">
+                <canvas id="revenueChart" height="500"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-secondary text-white">
+                <i class="fas fa-table me-2"></i>
+                Parking Lot Details
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th><i class="fas fa-map-marker-alt me-1"></i>Lot Name</th>
+                                <th><i class="fas fa-th me-1"></i>Total Spots</th>
+                                <th><i class="fas fa-car me-1"></i>Occupied</th>
+                                <th><i class="fas fa-check-circle me-1"></i>Available</th>
+                                <th><i class="fas fa-percentage me-1"></i>Utilization</th>
+                                <th><i class="fas fa-rupee-sign me-1"></i>Revenue (Completed)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lot_id, data in lot_summary.items() %}
+                            <tr>
+                                <td>{{ data.name }}</td>
+                                <td>{{ data.total_spots }}</td>
+                                <td>{{ data.occupied_spots }}</td>
+                                <td>{{ data.available_spots }}</td>
+                                <td>{{ "%.1f"|format(data.utilization * 100) if data.utilization is not none else 'N/A' }}%</td>
+                                <td>
+                                    <span class="text-success fw-bold">{{ data.revenue|currency }}</span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center">No parking lots found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary mt-3">
+    <i class="fas fa-arrow-left text-white me-2"></i>
+    Back to Dashboard
+</a>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Chart Initialization -->
+<script>
+    // Revenue by lot chart - now bigger and full width
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    const revenueChart = new Chart(revenueCtx, {
+        type: 'doughnut', // Changed to doughnut for better visual appeal
+        data: {
+            labels: {{ lot_names|tojson }},
+            datasets: [{
+                label: 'Revenue',
+                data: {{ revenue_data|tojson }},
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 206, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)',
+                    'rgba(255, 159, 64, 0.8)',
+                    'rgba(201, 203, 207, 0.8)',
+                    'rgba(255, 99, 255, 0.8)',
+                    'rgba(99, 255, 132, 0.8)',
+                    'rgba(132, 99, 255, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(201, 203, 207, 1)',
+                    'rgba(255, 99, 255, 1)',
+                    'rgba(99, 255, 132, 1)',
+                    'rgba(132, 99, 255, 1)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Revenue Distribution by Parking Lot',
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    },
+                    padding: 20
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += '₹' + context.raw.toFixed(2);
+                            
+                            // Calculate percentage
+                            let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            let percentage = ((context.raw / total) * 100).toFixed(1);
+                            label += ' (' + percentage + '%)';
+                            
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+</script>
+
+{% endblock %}

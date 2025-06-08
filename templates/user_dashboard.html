@@ -1,8 +1,177 @@
-{extends "base.html"}
-{block title}User Dashboard{endblock}
+{% extends 'base.html' %}
 
-{block content}
+{% block title %}User Dashboard - Vehicle Parking System{% endblock %}
 
-<h1>User Dashboard</h1>
+{% block content %}
+<h1 class="mb-4">
+    User Dashboard
+</h1>
+<p>
+    <i class="fas fa-user text-success me-2"></i>
+    Welcome, {{ session['username'] }}!
+</p>
 
-{endblock}
+<div class="row">
+    <!-- Section to Book Parking -->
+    <div class="col-md-6 mb-4">
+        <h2>
+            <i class="fas fa-plus-circle text-primary me-2"></i>
+            Book a Parking Spot
+        </h2>
+
+        <form method="POST" action="{{ url_for('book_spot') }}">
+            <div class="mb-3">
+                <label for="lot_id" class="form-label">
+                    <i class="fas fa-map-marker-alt me-1"></i>
+                    Select Parking Lot:
+                </label>
+                <select class="form-select" id="lot_id" name="lot_id" required>
+                    <option value="" disabled selected>-- Choose a Lot --</option>
+                    {% for lot in available_lots %}
+                        <option value="{{ lot.id }}" 
+                            {% if lot_availability.get(lot.id, 0) <= 0 %}disabled{% endif %}>
+                            {{ lot.location_name }} ({{ lot.address }})
+                            - ₹{{ "%.2f"|format(lot.price) }}/hr
+                            - 
+                            <span class="{% if lot_availability.get(lot.id, 0) > 0 %}text-success{% else %}text-danger{% endif %}">
+                                {% if lot_availability.get(lot.id, 0) > 0 %}
+                                    {{ lot_availability.get(lot.id, 0) }} spots available
+                                {% else %}
+                                    FULLY BOOKED
+                                {% endif %}
+                            </span>
+                        </option>
+                    {% endfor %}
+                </select>
+                <small class="text-muted">
+                    <i class="fas fa-info-circle"></i> Grayed-out options indicate no available spots
+                </small>
+            </div>
+            
+            <div class="mb-3">
+                <label for="vehicle_number" class="form-label">
+                    <i class="fas fa-car me-1"></i>
+                    Vehicle Number:
+                </label>
+                <input type="text" class="form-control" id="vehicle_number" name="vehicle_number" placeholder="e.g., MH12 BK 4832" required>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-parking text-white me-2"></i>
+                Book First Available Spot
+            </button>
+        </form>
+    </div>
+
+    <!-- Active Reservation Section -->
+    <div class="col-md-6 mb-4">
+        <h2>
+            <i class="fas fa-clock text-warning me-2"></i>
+            Active Reservation
+        </h2>
+        {% if active_reservation %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-parking me-2"></i>
+                        Spot {{ active_reservation.parking_spot.spot_number }} in {{ active_reservation.parking_spot.parking_lot.location_name }}
+                    </h5>
+                    <p class="card-text">
+                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                        <strong>Lot Address:</strong> {{ active_reservation.parking_spot.parking_lot.address }}<br>
+                        <i class="fas fa-car text-info me-2"></i>
+                        <strong>Vehicle Number:</strong> {{ active_reservation.vehicle_number if active_reservation.vehicle_number else 'N/A' }}<br>
+                        <i class="fas fa-clock text-success me-2"></i>
+                        <strong>Parked At:</strong> {{ active_reservation.parking_time.strftime('%Y-%m-%d %H:%M:%S') }} (UTC)<br>
+                        <i class="fas fa-rupee-sign text-warning me-2"></i>
+                        <strong>Current Rate:</strong> ₹{{ "%.2f"|format(active_reservation.parking_spot.parking_lot.price) }}/hr
+                    </p>
+                    <form method="POST" action="{{ url_for('release_spot', reservation_id=active_reservation.id) }}" onsubmit="return confirm('Are you sure you want to release this spot?');">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-sign-out-alt text-white me-2"></i>
+                            Release Spot
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% else %}
+            <p>
+                <i class="fas fa-times-circle text-muted me-2"></i>
+                No active reservation.
+            </p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row flex-nowrap overflow-auto">
+    {% for lot in available_lots %}
+        <div class="col-md-3 col-10 me-3">
+            <div class="card h-100 {% if lot_availability.get(lot.id, 0) <= 0 %}border-danger{% else %}border-success{% endif %}">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        {{ lot.location_name }}
+                        <span class="badge {% if lot_availability.get(lot.id, 0) > 0 %}bg-success{% else %}bg-danger{% endif %} float-end">
+                            {% if lot_availability.get(lot.id, 0) > 0 %}
+                                {{ lot_availability.get(lot.id, 0) }} available
+                            {% else %}
+                                FULL
+                            {% endif %}
+                        </span>
+                    </h6>
+                    <p class="card-text small mb-1">
+                        <i class="fas fa-map-marker-alt text-muted"></i> {{ lot.address }}<br>
+                        <i class="fas fa-rupee-sign text-muted"></i> ₹{{ "%.2f"|format(lot.price) }}/hr<br>
+                        <i class="fas fa-car text-muted"></i> {{ lot.number_of_spots }} total spots
+                    </p>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+
+<!-- Section for Parking History -->
+<div class="row mt-4">
+    <div class="col-12">
+        <h2>
+            <i class="fas fa-history text-info me-2"></i>
+            Parking History
+        </h2>
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th><i class="fas fa-building me-1"></i>Lot Name</th>
+                    <th><i class="fas fa-hashtag me-1"></i>Spot No.</th>
+                    <th><i class="fas fa-car me-1"></i>Vehicle No.</th>
+                    <th><i class="fas fa-sign-in-alt me-1"></i>Parked At</th>
+                    <th><i class="fas fa-sign-out-alt me-1"></i>Left At</th>
+                    <th><i class="fas fa-hourglass-half me-1"></i>Duration</th>
+                    <th><i class="fas fa-rupee-sign me-1"></i>Cost</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if past_reservations %}
+                    {% for res in past_reservations %}
+                        <tr>
+                            <td>{{ res.parking_spot.parking_lot.location_name }}</td>
+                            <td>{{ res.parking_spot.spot_number }}</td>
+                            <td>{{ res.vehicle_number if res.vehicle_number else '-' }}</td>
+                            <td>{{ res.parking_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ res.leaving_time.strftime('%Y-%m-%d %H:%M') if res.leaving_time else 'N/A' }}</td>
+                            <td>{{ calculate_duration(res.parking_time, res.leaving_time) if res.leaving_time else 'N/A' }}</td>
+                            <td class="text-success fw-bold">₹{{ "%.2f"|format(res.parking_cost) if res.parking_cost is not none else 'N/A' }}</td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            <i class="fas fa-info-circle text-muted me-2"></i>
+                            No parking history found.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

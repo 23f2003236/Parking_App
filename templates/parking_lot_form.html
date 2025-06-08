@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ 'Add' if not lot else 'Edit' }} Parking Lot - Vehicle Parking System{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">
+    <i class="fas fa-{{ 'plus' if not lot else 'edit' }} text-primary me-2"></i>
+    {{ 'Add New' if not lot else 'Edit' }} Parking Lot
+     <!-- Edit Parking Lot -->
+</h2>
+
+<form method="POST" action="{{ url_for('add_lot') if not lot else url_for('edit_lot', lot_id=lot.id) }}">
+    <div class="mb-3">
+        <label for="location_name" class="form-label">
+            <i class="fas fa-map-marker-alt me-1"></i>
+             Location Name
+        </label>
+        <input type="text" class="form-control" id="location_name" name="location_name" value="{{ lot.location_name if lot else '' }}" placeholder="Enter prime location name"required>
+    </div>
+    
+    <div class="mb-3">
+        <label for="address" class="form-label">
+            <i class="fas fa-home me-1"></i>
+            Address
+        </label>
+        <textarea class="form-control" id="address" name="address" rows="3" placeholder="Enter address"required>{{ lot.address if lot else '' }}</textarea>
+    </div>
+    
+    <div class="mb-3">
+        <label for="pin_code" class="form-label">
+            <i class="fas fa-map-pin me-1"></i>
+            Pin Code
+        </label>
+        <input type="text" class="form-control" id="pin_code" name="pin_code" value="{{ lot.pin_code if lot else '' }}" placeholder="Enter pin code"required>
+    </div>
+    
+    <div class="mb-3">
+        <label for="price" class="form-label">
+            <i class="fas fa-rupee-sign me-1"></i>
+            Price 
+        </label>
+        <input type="number" step="0.01" min="0" class="form-control" id="price" name="price" value="{{ lot.price if lot else '' }}" placeholder="Enter price per hour"required>
+    </div>
+    
+    <div class="mb-3">
+        <label for="number_of_spots" class="form-label">
+            <i class="fas fa-parking me-1"></i>
+            Number of Parking Spots
+        </label>
+        <input type="number" min="1" class="form-control" id="number_of_spots" name="number_of_spots" value="{{ lot.number_of_spots if lot else '' }}" placeholder="Enter maximum number of parking spots"required>
+        
+        {% if lot %}
+            <div class="form-text">
+                <i class="fas fa-info-circle text-info me-1"></i>
+                Current spots: <strong>{{ lot.number_of_spots }}</strong>
+                <br>
+                <i class="fas fa-exclamation-triangle text-warning me-1"></i>
+                <strong>Note:</strong> You can increase or decrease the number of spots. 
+                When reducing, spots with active reservations cannot be removed.
+            </div>
+        {% else %}
+            <div class="form-text">
+                <i class="fas fa-lightbulb text-info me-1"></i>
+                This will create the specified number of parking spots for this lot.
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-{{ 'plus' if not lot else 'save' }} me-2"></i>
+            {{ 'Add Parking Lot' if not lot else 'Update Parking Lot' }}
+        </button>
+        
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Back to Dashboard
+        </a>
+        
+        {% if lot %}
+            <a href="{{ url_for('view_lot_spots', lot_id=lot.id) }}" class="btn btn-outline-info">
+                <i class="fas fa-eye me-2"></i>
+                View All Spots
+            </a>
+        {% endif %}
+    </div>
+</form>
+
+{% if lot %}
+    <!-- Warning section for spot reduction -->
+    <div class="mt-4">
+        <div class="card border-warning">
+            <div class="card-header bg-warning bg-opacity-10">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Important Notes About Changing Spot Count
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li><strong>Increasing spots:</strong> New spots will be added and immediately available for booking.</li>
+                    <li><strong>Decreasing spots:</strong> Only possible if no cars are parked in the spots being removed.</li>
+                    <li><strong>Safety check:</strong> The system will prevent removal of occupied spots or spots with active reservations.</li>
+                    <li><strong>Spot numbering:</strong> When removing spots, the highest-numbered spots are removed first.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}

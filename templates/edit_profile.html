@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - Vehicle Parking System{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">
+    <i class="fas fa-user-edit text-primary me-2"></i>Edit Your Profile
+</h1>
+
+<form method="POST" action="{{ url_for('edit_profile') }}">
+    <div class="mb-3">
+        <label for="username" class="form-label">
+            <i class="fas fa-user me-1"></i>
+            Username
+        </label>
+        <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}" required>
+    </div>
+    
+    <div class="mb-3">
+        <label for="email" class="form-label">
+            <i class="fas fa-envelope me-1"></i>
+            Email address
+        </label>
+        <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}" required>
+    </div>
+    
+    <div class="mb-3">
+        <label for="phone" class="form-label">
+            <i class="fas fa-phone me-1"></i>
+            Phone Number
+        </label>
+        <input type="tel" class="form-control" id="phone" name="phone" value="{{ current_user.phone or '' }}">
+    </div>
+    
+    <div class="mb-3">
+        <label for="address" class="form-label">
+            <i class="fas fa-home me-1"></i>
+            Address
+        </label>
+        <textarea class="form-control" id="address" name="address" rows="3">{{ current_user.address or '' }}</textarea>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save text-white me-2"></i>
+        Update Profile
+    </button>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+        <i class="fas fa-times text-white me-2"></i>
+        Cancel
+    </a>
+</form>
+
+{% endblock %}

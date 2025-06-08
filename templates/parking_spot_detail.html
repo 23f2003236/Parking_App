@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Parking Spot Details - Admin - Vehicle Parking System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            {% if spot.status == 'O' %}
+                <h2>Occupied Parking Spot Details</h2>
+            {% else %}
+                <h2>View Parking Spot</h2>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-3"><strong>ID:</strong></div>
+                <div class="col-md-9">{{ spot.id }}</div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-3"><strong>Parking Lot:</strong></div>
+                <div class="col-md-9">{{ spot.parking_lot.location_name }}</div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-3"><strong>Spot Number:</strong></div>
+                <div class="col-md-9">{{ spot.spot_number }}</div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-3"><strong>Status:</strong></div>
+                <div class="col-md-9">
+                    {% if spot.status == 'A' %}
+                        <span class="badge bg-success">
+                            Available
+                        </span>
+                    {% else %}
+                        <span class="badge bg-danger">
+                            Occupied
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if spot.status == 'O' and reservation %}
+                <hr>
+                <h4>Reservation Details</h4>
+                
+                <div class="row mb-3">
+                    <div class="col-md-3"><strong>Customer ID:</strong></div>
+                    <div class="col-md-9">{{ reservation.user.id }}</div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-3"><strong>Customer Name:</strong></div>
+                    <div class="col-md-9">{{ reservation.user.username }}</div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-3"><strong>Vehicle Number:</strong></div>
+                    <div class="col-md-9">{{ reservation.vehicle_number }}</div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-3"><strong>Date/Time of Parking:</strong></div>
+                    <div class="col-md-9">{{ reservation.parking_time.strftime('%d/%m/%Y %H:%M') }}</div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-3"><strong>Est. Parking Cost:</strong></div>
+                    <div class="col-md-9">
+                        {{ reservation.parking_time|calculate_current_cost(spot.parking_lot.price)|currency }}
+                        <small class="text-muted">(Based on current duration)</small>
+                    </div>
+                </div>                
+            {% endif %}
+            
+            <div class="mt-4">
+                <a href="{{ url_for('view_lot_spots', lot_id=spot.lot_id) }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Lot Spots
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

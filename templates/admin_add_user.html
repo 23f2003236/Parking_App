@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Add New User - Admin - Vehicle Parking System{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">
+    <i class="fas fa-user-plus text-success me-2"></i>
+    Add New User
+</h1>
+
+<form method="POST" class="needs-validation" novalidate>
+    <div class="mb-3">
+        <label for="username" class="form-label">
+            <i class="fas fa-user text-primary me-2"></i>
+            Username
+        </label>
+        <input type="text" class="form-control" id="username" name="username" required>
+        <div class="invalid-feedback">
+            <i class="fas fa-exclamation-circle me-1"></i>
+            Please enter a username.
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="password" class="form-label">
+            <i class="fas fa-lock text-warning me-2"></i>
+            Password
+        </label>
+        <input type="password" class="form-control" id="password" name="password" required>
+        <div class="invalid-feedback">
+            <i class="fas fa-exclamation-circle me-1"></i>
+            Please enter a password.
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="email" class="form-label">
+            <i class="fas fa-envelope text-info me-2"></i>
+            Email
+        </label>
+        <input type="email" class="form-control" id="email" name="email" required>
+        <div class="invalid-feedback">
+            <i class="fas fa-exclamation-circle me-1"></i>
+            Please enter a valid email address.
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="phone" class="form-label">
+            <i class="fas fa-phone text-success me-2"></i>
+            Phone 
+            <span class="text-muted">(Optional)</span>
+        </label>
+        <input type="tel" class="form-control" id="phone" name="phone" placeholder="Enter phone number">
+    </div>
+
+    <div class="mb-3">
+        <label for="address" class="form-label">
+            <i class="fas fa-home text-secondary me-2"></i>
+            Address 
+            <span class="text-muted">(Optional)</span>
+        </label>
+        <textarea class="form-control" id="address" name="address" rows="3" placeholder="Enter full address"></textarea>
+    </div>
+
+    <div class="mt-4 d-grid gap-2 d-md-flex justify-content-md-end">
+        <a href="{{ url_for('admin_view_users') }}" class="btn btn-secondary me-md-2">
+            <i class="fas fa-times text-white me-2"></i>
+            Cancel
+        </a>
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-user-plus text-white me-2"></i>
+            Create User
+        </button>
+    </div>
+</form>
+
+<script>
+    // Bootstrap form validation(copied from bootstrap websites)
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+    </script>
+
+{% endblock %}

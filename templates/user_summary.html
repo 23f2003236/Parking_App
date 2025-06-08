@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}My Summary - Vehicle Parking System{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">
+    <i class="fas fa-chart-line text-primary me-2"></i>My Parking Summary
+</h1>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <i class="fas fa-chart-bar me-2"></i>
+                Usage Statistics
+            </div>
+            <div class="card-body">
+                <p>
+                    <i class="fas fa-list text-primary me-2"></i>
+                    <strong>Total Completed Reservations:</strong> {{ summary.total_reservations }}
+                </p>
+                <p>
+                    <i class="fas fa-rupee-sign text-success me-2"></i>
+                    <strong>Total Parking Cost:</strong> <span class="text-success fw-bold">₹{{ "%.2f"|format(summary.total_cost) }}</span>
+                </p>
+                <p>
+                    <i class="fas fa-calculator text-warning me-2"></i>
+                    <strong>Average Cost per Reservation:</strong> <span class="text-warning fw-bold">₹{{ "%.2f"|format(summary.avg_cost) }}</span>
+                </p>
+                <p>
+                    <i class="fas fa-clock text-info me-2"></i>
+                    <strong>Average Parking Duration:</strong> <span class="text-info fw-bold">{{ summary.avg_duration }}</span>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <i class="fas fa-info-circle me-2"></i>
+                Current Status
+            </div>
+            <div class="card-body">
+                {% if active_reservation %}
+                    <p>
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        You have an <strong>active reservation</strong>:
+                    </p>
+                    <ul>
+                        <li>
+                            <i class="fas fa-map-marker-alt text-primary me-1"></i>
+                            <strong>Lot:</strong> {{ active_reservation.parking_spot.parking_lot.location_name }}
+                        </li>
+                        <li>
+                            <i class="fas fa-parking text-info me-1"></i>
+                            <strong>Spot:</strong> {{ active_reservation.parking_spot.spot_number }}
+                        </li>
+                        <li>
+                            <i class="fas fa-clock text-success me-1"></i>
+                            <strong>Parked At:</strong> {{ active_reservation.parking_time.strftime('%Y-%m-%d %H:%M:%S') }} (UTC)
+                        </li>
+                    </ul>
+                {% else %}
+                    <p>
+                        <i class="fas fa-times-circle text-muted me-2"></i>
+                        You do not have any active reservations.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Spending Chart Row (Full Width) -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <i class="fas fa-chart-bar me-2"></i>Spending by Parking Location
+            </div>
+            <div class="card-body">
+                <canvas id="costChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="mt-4">
+    <i class="fas fa-history text-info me-2"></i>Recent Parking History
+</h2>
+
+{% if past_reservations %}
+    <table class="table table-striped table-hover">
+        <thead class ="table-dark">
+            <tr>
+                <th><i class="fas fa-building me-1"></i>Lot Name</th>
+                <th><i class="fas fa-hashtag me-1"></i>Spot No.</th>
+                <th><i class="fas fa-car me-1"></i>Vehicle No.</th>
+                <th><i class="fas fa-sign-in-alt me-1"></i>Parked At</th>
+                <th><i class="fas fa-sign-out-alt me-1"></i>Left At</th>
+                <th><i class="fas fa-hourglass-half me-1"></i>Duration</th>
+                <th><i class="fas fa-rupee-sign me-1"></i>Cost</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for res in past_reservations %}
+                <tr>
+                    <td>{{ res.parking_spot.parking_lot.location_name }}</td>
+                    <td>{{ res.parking_spot.spot_number }}</td>
+                    <td>{{ res.vehicle_number if res.vehicle_number else 'N/A' }}</td>
+                    <td>{{ res.parking_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ res.leaving_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ calculate_duration(res.parking_time, res.leaving_time) }}</td>
+                    <td class="text-success fw-bold">₹{{ "%.2f"|format(res.parking_cost) }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        You have no past parking history.
+    </div>
+{% endif %}
+
+<a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary mt-3">
+    <i class="fas fa-arrow-left text-white me-2"></i>Back to Dashboard
+</a>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Chart Initialization -->
+<script>
+    // Location cost chart (now full width)
+    const costCtx = document.getElementById('costChart').getContext('2d');
+    const costChart = new Chart(costCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ lot_cost_labels|tojson }},
+            datasets: [{
+                label: 'Amount Spent (₹)',
+                data: {{ lot_cost_data|tojson }},
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value.toFixed(2);
+                        }
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Total Spending by Parking Location'
+                }
+            }
+        }
+    });
+</script>
+
+{% endblock %}
