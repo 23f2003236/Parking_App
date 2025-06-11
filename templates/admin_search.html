@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Search - Admin - Vehicle Parking System{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Search Parking Data</h1>
+
+<form method="GET" action="{{ url_for('admin_search') }}" class="mb-4">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+            <label for="search_term" class="form-label">What are you looking for?</label>
+            <input type="text" 
+                   class="form-control" 
+                   id="search_term"
+                   name="q"
+                   value="{{ query or '' }}"
+                   placeholder="User ID, location name, or email...">
+        </div>
+        <div class="col-md-2">
+            <label for="search_type" class="form-label">Search In</label>
+            <select class="form-select" id="search_type" name="type">
+                <option value="all" {% if search_type == 'all' %}selected{% endif %}>All</option>
+                <option value="lots" {% if search_type == 'lots' %}selected{% endif %}>Parking Lots</option>
+                <option value="users" {% if search_type == 'users' %}selected{% endif %}>Users</option>
+                <option value="spots" {% if search_type == 'spots' %}selected{% endif %}>Parking Spots</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    <i class="fas fa-search me-2"></i>Search
+                </button>
+                {% if query %}
+                <a href="{{ url_for('admin_search') }}" class="btn btn-outline-danger">
+                    <i class="fas fa-times"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</form>
+
+{% if results %}
+    {% if results.lots %}
+        <h4 class="mt-4">Matching Parking Lots ({{ results.lots | length }})</h4>
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Location Name</th>
+                    <th>Price</th>
+                    <th>Spots</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lot in results.lots %}
+                <tr>
+                    <td>{{ lot.id }}</td>
+                    <td>{{ lot.location_name }}</td>
+                    <td>₹{{ "%.2f"|format(lot.price) }}</td>
+                    <td>{{ lot.number_of_spots }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% if results.users %}
+        <h4 class="mt-4">Matching Users ({{ results.users | length }})</h4>
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in results.users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.phone or 'N/A' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% if results.spots %}
+        <h4 class="mt-4">Matching Parking Spots ({{ results.spots | length }})</h4>
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Lot Name</th>
+                    <th>Spot No.</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for spot in results.spots %}
+                <tr>
+                    <td>{{ spot.id }}</td>
+                    <td>{{ spot.parking_lot.location_name }}</td>
+                    <td>{{ spot.spot_number }}</td>
+                    <td>{{ 'Available' if spot.status == 'A' else 'Occupied' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% if not results.lots and not results.users and not results.spots %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>No results found matching your criteria.
+        </div>
+    {% endif %}
+{% endif %}
+
+<a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary mt-3">
+    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+</a>
+{% endblock %}
