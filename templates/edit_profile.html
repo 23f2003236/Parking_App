@@ -6,48 +6,45 @@
 <h1 class="mb-4">
     <i class="fas fa-user-edit text-primary me-2"></i>Edit Your Profile
 </h1>
-
 <form method="POST" action="{{ url_for('edit_profile') }}">
+    
+    <!-- Username is locked(disabled) -->
     <div class="mb-3">
         <label for="username" class="form-label">
-            <i class="fas fa-user me-1"></i>
-            Username
+            <i class="fas fa-user me-1"></i>Username
         </label>
-        <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}" required>
+        <input type="text" class="form-control" id="username" value="{{ current_user.username }}" disabled>
+        <div class="form-text text-muted">Username cannot be changed.</div>
     </div>
-    
+
+    <!-- Editable Email -->
     <div class="mb-3">
         <label for="email" class="form-label">
-            <i class="fas fa-envelope me-1"></i>
-            Email address
+            <i class="fas fa-envelope me-1"></i>Email Address
         </label>
-        <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}" required>
+        <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}">
     </div>
-    
+
+    <!-- Password Fields -->
     <div class="mb-3">
-        <label for="phone" class="form-label">
-            <i class="fas fa-phone me-1"></i>
-            Phone Number
+        <label for="password" class="form-label">
+            <i class="fas fa-lock me-1"></i>New Password
         </label>
-        <input type="tel" class="form-control" id="phone" name="phone" value="{{ current_user.phone or '' }}">
+        <input type="password" class="form-control" id="password" name="password" placeholder="Leave blank to keep current password">
     </div>
-    
+
     <div class="mb-3">
-        <label for="address" class="form-label">
-            <i class="fas fa-home me-1"></i>
-            Address
+        <label for="confirm_password" class="form-label">
+            <i class="fas fa-lock me-1"></i>Confirm Password
         </label>
-        <textarea class="form-control" id="address" name="address" rows="3">{{ current_user.address or '' }}</textarea>
+        <input type="password" class="form-control" id="confirm_password" name="confirm_password">
     </div>
-    
+
     <button type="submit" class="btn btn-primary">
-        <i class="fas fa-save text-white me-2"></i>
-        Update Profile
+        <i class="fas fa-save me-2"></i>Save Changes
     </button>
     <a href="{{ url_for('index') }}" class="btn btn-secondary">
-        <i class="fas fa-times text-white me-2"></i>
-        Cancel
+        <i class="fas fa-times me-2"></i>Cancel
     </a>
 </form>
-
 {% endblock %}

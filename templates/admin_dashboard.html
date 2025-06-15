@@ -17,7 +17,7 @@
        
     <!-- Table to display existing lots -->
     <table class="table table-striped table-hover">
-        <thead>
+        <thead class="table-dark">
             <tr>
                 <th>ID</th>
                 <th>Location Name</th>
@@ -72,7 +72,7 @@
         {% for lot in parking_lots %}
         <div class="col-md-6 mb-4">
             <div class="card">
-                <div class="card-header bg-secondary text-dark"> 
+                <div class="card-header bg-light text-primary"> 
                     <!-- we can put bg-primary above  -->
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">{{ lot.location_name }}</h5>

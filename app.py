@@ -11,7 +11,6 @@ app.config['SECRET_KEY'] = 'parking_app'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.root_path, 'instance', 'parking.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-#=============================================================== Database Setup ==============================================================
 db = SQLAlchemy()
 db.init_app(app)
 migrate = Migrate(app, db)
@@ -61,22 +60,19 @@ class ParkingLot(db.Model):
     status = db.Column(db.String(20), nullable=False, default='Available')
     
     spots = db.relationship('ParkingSpot', backref='parking_lot', lazy=True, cascade="all, delete-orphan", passive_deletes=True)
+    
 class ParkingSpot(db.Model):
     __tablename__ = 'parking_spot'
     id = db.Column(db.Integer, primary_key=True)
     spot_number = db.Column(db.Integer, nullable=False)
-    capacity = db.Column(db.Integer, nullable=False, default=1)
     occupied = db.Column(db.Integer, nullable=False, default=0)
     status = db.Column(db.String(20), nullable=False, default='Available')
 
     lot_id = db.Column(db.Integer, db.ForeignKey('parking_lot.id', ondelete='CASCADE'), nullable=False)
     reservations = db.relationship('Reservation', backref='parking_spot', lazy=True, cascade = "all, delete-orphan", passive_deletes=True)
 
-    def is_available(self):
-        return self.occupied <= self.capacity
-
     def __repr__(self):
-        return f'<ParkingSpot {self.id} in Lot {self.lot_id}>'
+        return f'<ParkingSpot- {self.id} in Lot- {self.lot_id}>'
 
 class Reservation(db.Model):
     __tablename__ = 'reservation'
@@ -91,12 +87,12 @@ class Reservation(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
 
     def __repr__(self):
-        return f'<Reservation {self.id} for Spot {self.spot_id} by User {self.user_id}>'
+        return f'<Reservation- {self.id} for Spot- {self.spot_id} by User- {self.user_id}>'
 
 
 with app.app_context():
     db.create_all()
-    #check if the default admin user exists or not ?
+    #check if the default admin user already exists(bcz i keep forgeting)
     existing_admin = User.query.filter_by(username='admin').first()
     if not existing_admin:
         admin_password = 'admin'
@@ -125,13 +121,13 @@ def calculate_current_cost(start_time, hourly_rate):
     hours_parked = time_parked.total_seconds() / 3600
     
     billable_hours = int(hours_parked) + (1 if hours_parked % 1 > 0 else 0) # Round up to next hour
-    return max(billable_hours * hourly_rate, hourly_rate) # Minimum 1 hour charge for parking
+    return max(billable_hours * hourly_rate, hourly_rate) 
 
 def calculate_final_cost(start_time, end_time, hourly_rate):
-    '''calculating the final cost of the parking session'''
+    '''calculating the final cost of the parking session based on the start and end time and the hourly rate'''
 
     if not start_time or not end_time or hourly_rate is None:
-        return None
+        return 0.0
     time_parked = end_time - start_time
     hours_parked = time_parked.total_seconds() / 3600
     billable_hours = int(hours_parked) + (1 if hours_parked % 1 > 0 else 0) 
@@ -139,13 +135,13 @@ def calculate_final_cost(start_time, end_time, hourly_rate):
 
 @app.template_filter('calculate_duration')
 def calculate_duration(start_time, end_time):
-    '''calculating the duration of the parking session in hours and minutes'''
+    '''calculating the duration of the parking session in hours and minutes based on the start and the end time'''
 
     if not start_time or not end_time:
         return "N/A"
+    
     time_diff = end_time - start_time
     total_seconds = time_diff.total_seconds()
-    
     hours = int(total_seconds // 3600)
     minutes = int((total_seconds % 3600) // 60)
     return f"{hours}h {minutes}m"
@@ -165,10 +161,9 @@ def index():
 def register():
     if 'user_id' in session:
         return redirect(url_for('index'))
-    
     if request.method == 'GET':
         return render_template('register.html')
-    
+
     new_username = request.form['username']
     new_password = request.form['password']
     new_email = request.form['email']
@@ -177,14 +172,14 @@ def register():
 
     duplicate_user = User.query.filter( (User.username == new_username) | (User.email == new_email)).first()
     if duplicate_user:
-        flash('Username or email already exists.', 'danger')
+        flash('OOPS! Username or email already exists.', 'danger')
         return redirect(url_for('register'))
 
     encrypted_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
     password_string = encrypted_password.decode('utf-8')
 
     user_account = User( username=new_username, password=password_string, email=new_email, phone=user_phone, address=user_address, is_admin=False)
-    
+
     db.session.add(user_account)
     db.session.commit()
     flash('Registration successful! Please login.', 'success')
@@ -205,21 +200,20 @@ def login():
     if not entered_username or not entered_password:
         flash('Please enter both username and password.', 'danger')
         return redirect(url_for('login'))
- 
-    found_user = User.query.filter_by(username=entered_username).first()
 
+    found_user = User.query.filter_by(username=entered_username).first()
     if found_user and bcrypt.checkpw(entered_password.encode('utf-8'), found_user.password.encode('utf-8')):
-        #setting the session of user and redirecting to dashboard
+
         session['user_id'] = found_user.id
         session['username'] = found_user.username
         session['is_admin'] = found_user.is_admin
             
-        flash('Login successful!', 'success')
-            
+        flash('Login successful, welcome back!', 'success')
         return redirect(url_for('admin_dashboard') if found_user.is_admin else url_for('user_dashboard'))
     #login failed 
-    flash('Invalid username or password. Try again!', 'danger')
+    flash('OOPS! Invalid username or password. Try again!', 'danger')
     return redirect(url_for('login'))
+    
 
 
 @app.route('/logout')
@@ -238,7 +232,7 @@ def admin_dashboard():
     
     parking_lots = ParkingLot.query.order_by(ParkingLot.location_name).all()
     
-    #calculating the availablity of each parking lot and storing it in dictionary!
+    #calculating the availablity of each parking lot by counting the available spots of each lot and storing it in dictionary!
     lot_availability = {}
     for lot in parking_lots:
         available_count = ParkingSpot.query.filter_by( lot_id=lot.id, status='A').count()
@@ -282,12 +276,11 @@ def add_lot():
     db.session.add(new_parking_lot)
     db.session.flush() # why flush ? we use flush here to get the lot_id of the new lot to create parking spots
 
-    # create parking spots
+    # Now creating parking spots
     for spot_number in range(1, total_spots + 1):
-        parking_spot = ParkingSpot(
-            lot_id=new_parking_lot.id,
-            spot_number=spot_number,
-            status='A')
+        parking_spot = ParkingSpot(lot_id=new_parking_lot.id,
+                                   spot_number=spot_number,
+                                   status='A')
         db.session.add(parking_spot)
     #if everything is fine, commit the changes!
     db.session.commit()
@@ -309,10 +302,10 @@ def edit_lot(lot_id):
     new_spot_count = int(request.form['number_of_spots'])
     # checking if the new price and spot count are valid or not ?
     if new_price < 0:
-        flash('Price cannot be negative!', 'warning')
+        flash('OOPS! Price cannot be negative', 'warning')
         return render_template('parking_lot_form.html', lot=lot)
     if new_spot_count < 1:
-        flash('You need at least 1 parking spot!', 'warning')
+        flash('OOPS! You need at least 1 parking spot', 'warning')
         return render_template('parking_lot_form.html', lot=lot)
     #if yes, then update the lot
     lot.location_name = new_name
@@ -359,7 +352,6 @@ def edit_lot(lot_id):
         delete_spot = ParkingSpot.query.filter( ParkingSpot.lot_id == lot_id, 
                                                ParkingSpot.spot_number > new_spot_count ).all()
         for spot in delete_spot:
-            Reservation.query.filter_by(spot_id=spot.id).delete()
             db.session.delete(spot)
         lot.number_of_spots = new_spot_count
         db.session.commit()
@@ -370,7 +362,7 @@ def edit_lot(lot_id):
 @admin_required
 def delete_lot(lot_id):
     '''deleting a lot means deleting all the spots too from that lot and then deleting the lot itself 
-    but we already use cascade delete in the models, so no need to delete the spots manually !'''
+    but if there are occupied spots in the lot, then we can't delete it !'''
 
     lot_to_delete = ParkingLot.query.get_or_404(lot_id)
     spots_in_use = ParkingSpot.query.filter_by(lot_id=lot_to_delete.id, status='O').count()
@@ -408,14 +400,12 @@ def admin_view_user(user_id):
     
     if user_parking_history:
         avg_spending = money_spent / len(user_parking_history)
-    avg_spending = 0
+    else:
+        avg_spending = 0
 
-    #appending all the finished sessions by user in a list 
-    finished_sessions = []
-    for reservation in user_parking_history:
-        if reservation.leaving_time:
-            finished_sessions.append(reservation)
-    # if the user has finished sessions then calculate the avg parking time
+    finished_sessions = [reservation for reservation in user_parking_history if reservation.leaving_time]
+
+    # if the user has finished sessions then calculate the avg parking time if not then return not avaible
     if finished_sessions:
         total_parking_time = 0
         for reservation in finished_sessions:
@@ -443,28 +433,28 @@ def admin_add_user():
     if request.method == 'GET':
         return render_template('admin_add_user.html')
     # POST request
-    uname = request.form['username']
-    pwd = request.form['password']
+    username = request.form['username']
+    password = request.form['password']
     email = request.form['email']
     phone = request.form.get('phone', '')
     address = request.form.get('address', '')
     
-    user_exist = User.query.filter((User.username == uname) | (User.email == email)).first() 
+    user_exist = User.query.filter((User.username == username) | (User.email == email)).first() 
     # checking if the username or email already exists or not ?
     if user_exist:
-        flash('Username or email already exists.', 'danger')
+        flash('OOPS! Username or email already exists.', 'danger')
         return render_template('admin_add_user.html')
 
     # if not then create a new user and commit it!
-    hashed_password = bcrypt.hashpw(pwd.encode('utf-8'), bcrypt.gensalt())
-    new_user = User( username=uname,
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    new_user = User( username=username,
                      password=hashed_password.decode('utf-8'), 
                      email=email, phone=phone, 
                      address=address,
                      is_admin=False)
     db.session.add(new_user)
     db.session.commit()
-    flash(f'User "{uname}" created successfully!', 'success')
+    flash(f'User "{username}" created successfully!', 'success')
     return redirect(url_for('admin_view_users'))
 
 @app.route('/admin/users/delete/<int:user_id>', methods=['POST'])
@@ -484,11 +474,10 @@ def admin_delete_user(user_id):
 @app.route('/admin/lots/<int:lot_id>/spots')
 @admin_required
 def view_lot_spots(lot_id):
-    ''' here we are checking all the available spots in the lot and the number of busy and free spots in the lot !'''
+    ''' In this route we are checking all the available spots and the number of busy and free spots in the lot !'''
 
     parking_lot = ParkingLot.query.get_or_404(lot_id)
     all_spots = ParkingSpot.query.filter_by(lot_id=lot_id).order_by(ParkingSpot.spot_number).all()
-    
     free_spots = ParkingSpot.query.filter_by(lot_id=lot_id, status='A').count()
     busy_spots = ParkingSpot.query.filter_by(lot_id=lot_id, status='O').count()
 
@@ -508,9 +497,8 @@ def view_parking_spot(spot_id):
     curr_reservation = None
 
     # checking if the spot is occupied or not?
-    if parking_spot.status == 'O':
-        # if yes then find the reservation for that spot 
-        curr_reservation = Reservation.query.filter_by( spot_id=spot_id,  leaving_time=None).first() 
+    if parking_spot.status == 'O': 
+        curr_reservation = Reservation.query.filter_by( spot_id=spot_id,  leaving_time=None).first() # if yes then find the reservation for that spot
     # if not then return the spot details without any reservation details!
     return render_template('parking_spot_detail.html',spot=parking_spot, reservation=curr_reservation ) 
 
@@ -519,15 +507,14 @@ def view_parking_spot(spot_id):
 def admin_search():
     # Get search input
     query = request.args.get('q', '').strip() #why strip? bcz we want to remove any leading or trailing spaces 
-    search_type = request.args.get('type', 'all')  # default to 'all' bcz we are generous to know everything like that !HAHA
+    search_type = request.args.get('type', 'all')  # default to 'all' 
 
     results = {'lots': [],'users': [],'spots': []}
 
-    #if nothing search then we give empty results without hesitation
     if not query:
         return render_template('admin_search.html', results=results, search_query=query, search_type=search_type)
 
-    search_pattern = f"%{query}%" # wildcards 
+    search = f"%{query}%" # sql-wildcards 
 
     # Search users (either by id , email , username)
     if search_type == 'all' or search_type == 'users':
@@ -537,18 +524,18 @@ def admin_search():
             if user:
                 results['users'].append(user)
         else:
-            #case-insensitive bcz admin is lazy to type
-            found_users = User.query.filter(User.is_admin == False,(User.username.ilike(search_pattern) | User.email.ilike(search_pattern))).all()
+            #case-insensitive bcz who remmembers usernames ?
+            found_users = User.query.filter(User.is_admin == False,(User.username.ilike(search) | User.email.ilike(search))).all()
             results['users'].extend(found_users)
 
     # Search spots (by location name as per wireframe )
     if search_type == 'all' or search_type == 'spots':
-        found_spots = (ParkingSpot.query.join(ParkingLot).filter(ParkingLot.location_name.ilike(search_pattern)).order_by(ParkingLot.location_name, ParkingSpot.spot_number).all())
+        found_spots = (ParkingSpot.query.join(ParkingLot).filter(ParkingLot.location_name.ilike(search)).order_by(ParkingLot.location_name, ParkingSpot.spot_number).all())
         results['spots'] = found_spots
 
     # Search lots (by location name )
     if search_type == 'all' or search_type == 'lots':
-        found_lots = (ParkingLot.query.filter(ParkingLot.location_name.ilike(search_pattern)).order_by(ParkingLot.location_name).all())
+        found_lots = (ParkingLot.query.filter(ParkingLot.location_name.ilike(search)).order_by(ParkingLot.location_name).all())
         results['lots'] = found_lots
 
     return render_template('admin_search.html',
@@ -563,7 +550,6 @@ def admin_summary():
     total_lots = ParkingLot.query.count()
     total_spots = ParkingSpot.query.count()
     total_users = User.query.filter_by(is_admin=False).count()
-    
     busy_spots = db.session.query(ParkingSpot).join(Reservation).filter( Reservation.leaving_time.is_(None), Reservation.is_active.is_(True)).count()
     free_spots = total_spots - busy_spots
     
@@ -578,8 +564,7 @@ def admin_summary():
             earnings_by_lot[lot_id] = earnings_by_lot.get(lot_id, 0) + parking_session.parking_cost
             total_revenue += parking_session.parking_cost
 
-    # graph data for making pie chart!
-    lot_details = {}
+    lot_details = {} 
     location_names = []
     usage_percent = []
     lot_revenues = []
@@ -591,16 +576,14 @@ def admin_summary():
         location_names.append(location_name)
         
         spots_in_lot = ParkingSpot.query.filter_by(lot_id=lot_id).count()
-        
         occupied_in_lot = db.session.query(ParkingSpot).join(Reservation).filter( ParkingSpot.lot_id == lot_id,
-                                                                                  Reservation.leaving_time != None,
-                                                                                  Reservation.is_active == True).count()
+                                                                                  Reservation.leaving_time.is_(None),
+                                                                                  Reservation.is_active.is_(True)).count()
         available_in_lot = spots_in_lot - occupied_in_lot
         
         usage = (occupied_in_lot / spots_in_lot) * 100 if spots_in_lot > 0 else 0
-        lot_revenue = round(earnings_by_lot.get(lot_id, 0), 2)
-
         usage_percent.append(round(usage, 1))
+        lot_revenue = round(earnings_by_lot.get(lot_id, 0), 2)
         lot_revenues.append(lot_revenue)
         
         lot_details[lot_id] = { 'name': location_name,
@@ -625,62 +608,63 @@ def admin_summary():
 @app.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
-    ''' this is common for both admin and user , they can change their 
-        username , email , phone , address  anytime anywhere '''
-    
-    user_id = session['user_id'] # Get the user ID from the session
-    user = User.query.get_or_404(user_id) # Automatically handles "not found"
+    """Allowing user to update his  email and password ( changing username is locked for now )"""
+    user = User.query.get_or_404(session['user_id'])
 
-    if request.method == 'GET':
-        return render_template('edit_profile.html', current_user=user)
-    # POST request
-    new_uname = request.form['username']
-    new_email = request.form['email']
-    new_phone = request.form.get('phone', '')
-    new_address = request.form.get('address', '')
+    if request.method == 'POST':
+        new_email = request.form.get('email', '').strip()
+        new_password = request.form.get('password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
 
-    user_exist = User.query.filter( User.id != user_id, (User.username == new_uname) | (User.email == new_email)).first()
-    # check if the username or email already exists in the database or not ?
-    if user_exist:
-        flash('Username or email already taken.', 'danger')
-        return render_template('edit_profile.html', current_user=user)
-    # If not, then update the user account 
-    user.username = new_uname
-    user.email = new_email
-    user.phone = new_phone
-    user.address = new_address
-    db.session.commit()
-    session['username'] = user.username # updating the session username too
-    flash('Profile updated successfully!', 'success')
-    return redirect(url_for('admin_dashboard' if user.is_admin else 'user_dashboard'))
+        if not new_email and not new_password:
+            flash("UGH! You didn't change anything.", 'warning')
+            return render_template('edit_profile.html', current_user=user)
+
+        if new_email and new_email != user.email:
+            if User.query.filter(User.id != user.id, User.email.ilike(new_email)).first():
+                flash("OOPS !Email already in use. Please try different Email. ", 'danger')
+                return render_template('edit_profile.html', current_user=user)
+            user.email = new_email
+
+        if new_password:
+            if len(new_password) < 6:
+                flash("UHM !Password must be at least 6 characters.", 'danger')
+                return render_template('edit_profile.html', current_user=user)
+            if new_password != confirm_password:
+                flash("OOPS! Passwords don’t match, Try again.", 'warning')
+                return render_template('edit_profile.html', current_user=user)
+            user.password = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
+
+        db.session.commit()
+        flash("Your profile is looking fresh!", 'success')
+        return redirect(url_for('admin_dashboard' if user.is_admin else 'user_dashboard'))
+    return render_template('edit_profile.html', current_user=user)
 
 #<--------------------------------------------------------------------- USER ROUTES -------------------------------------------------------->
 @app.route('/user/dashboard')
 @login_required
 def user_dashboard():
+    user_id = session['user_id']
+    user = User.query.get_or_404(user_id)
 
-    current_user_id = session['user_id'] # getting the current user id of the user
-    current_user = User.query.get_or_404(current_user_id) # getting the current user details
-
-    current_booking = Reservation.query.filter_by( user_id=current_user_id, leaving_time = None).first()
-    old_bookings = Reservation.query.filter( Reservation.user_id == current_user_id, Reservation.leaving_time != None).order_by(Reservation.leaving_time.desc()).all()
+    current_booking = Reservation.query.filter_by( user_id=user_id, leaving_time = None).first()
+    old_bookings = Reservation.query.filter( Reservation.user_id == user_id,
+                                             Reservation.leaving_time != None).order_by(Reservation.leaving_time.desc()).all()
 
     all_lots = ParkingLot.query.order_by(ParkingLot.location_name).all()
-
-    # finding the number of free spots in each lot and stored in a dictionary
+    # finding the number of free spots in each lot and stored in a dictionary!
     spots_available = {}
     for parking_lot in all_lots:
         free_spots = ParkingSpot.query.filter_by( lot_id=parking_lot.id, status='A').count()
         spots_available[parking_lot.id] = free_spots
 
     return render_template('user_dashboard.html',
-                            user=current_user,
+                            user=user,
                             active_reservation=current_booking,
                             past_reservations=old_bookings,
                             available_lots=all_lots,
                             lot_availability=spots_available,
                             calculate_duration=calculate_duration )
-
 
 @app.route('/user/book', methods=['POST'])
 @login_required
@@ -703,7 +687,7 @@ def book_spot():
         # Find available spot
         spot = ParkingSpot.query.filter_by(lot_id=lot_id, status='A').first()
         if not spot:
-            flash("No available spots in this lot.", "danger")
+            flash("Sorry, No available spots in this lot.", "danger")
             return redirect(url_for('user_dashboard'))
 
         # Proceed with booking
@@ -716,9 +700,9 @@ def book_spot():
         flash(f'Booked Spot {spot.spot_number} at {spot.parking_lot.location_name}!', 'success')
         return redirect(url_for('user_dashboard'))
 
-    except Exception as e:
+    except Exception :
         db.session.rollback()
-        flash(f"Error while booking: {str(e)}", "danger")
+        flash(f"Error while booking spot, Please try again", "danger")
         return redirect(url_for('user_dashboard'))
 
 
@@ -726,35 +710,27 @@ def book_spot():
 @login_required
 def release_spot(reservation_id):
     ''' Here we are releasing the spot by updating the leaving time, total cost and 
-        free up the spot | using try except block | bcz its case sensitive'''
+        also mark the spot as available and make the reservation inactive !'''
     
-    try:
-        current_user = session.get('user_id')
+    user_id = session['user_id']
 
-        reservation = Reservation.query.filter_by(id=reservation_id, user_id=current_user, leaving_time=None).first_or_404()
-        # Mark leaving time
-        reservation.leaving_time = datetime.utcnow()
-        rate = reservation.parking_spot.parking_lot.price
-        # Calculate cost
-        reservation.parking_cost = calculate_final_cost(reservation.parking_time, reservation.leaving_time, rate)
+    reservation = Reservation.query.filter_by(id=reservation_id, user_id=user_id, leaving_time=None).first_or_404()
+    reservation.leaving_time = datetime.utcnow()
+    rate = reservation.parking_spot.parking_lot.price
+    # Calculating the cost 
+    reservation.parking_cost = calculate_final_cost(reservation.parking_time, reservation.leaving_time, rate)
 
-        # Free up the spot
-        spot = reservation.parking_spot
-        spot.status = 'A'
-        spot.occupied = 0
-        reservation.is_active = False
+    # Free up the spot
+    spot = reservation.parking_spot
+    spot.status = 'A'
+    spot.occupied = 0
+    reservation.is_active = False
 
-        db.session.commit()
+    db.session.commit()
 
-        flash(
-            f"Spot {spot.spot_number} at {spot.parking_lot.location_name} released. "
-            f"Total charge: ₹{reservation.parking_cost:.2f}", 'success')
-        return redirect(url_for('user_dashboard'))
-
-    except Exception as e:
-        db.session.rollback()
-        flash(f"Error while releasing the spot: {str(e)}", 'danger')
-        return redirect(url_for('user_dashboard'))
+    flash(f"Spot {spot.spot_number} at {spot.parking_lot.location_name} released! "
+          f"Total: ₹{reservation.parking_cost:.2f}", 'success')
+    return redirect(url_for('user_dashboard'))
 
 
 @app.route('/user/summary')
@@ -762,16 +738,15 @@ def release_spot(reservation_id):
 def user_summary():
 
     user_id = session['user_id'] 
-    #active reservation
     current_parking = Reservation.query.filter_by( user_id=user_id, leaving_time=None).first()
-
-    past_sessions = Reservation.query.filter( Reservation.user_id == user_id, Reservation.leaving_time.is_not(None) ).order_by(Reservation.leaving_time.desc()).all()
+    past_sessions = Reservation.query.filter( Reservation.user_id == user_id,
+                                              Reservation.leaving_time.is_not(None) ).order_by(Reservation.leaving_time.desc()).all()
     
     #calculating the total sessions , total spent and average cost per session
     total_sessions = len(past_sessions)
     total_spent = sum(s.parking_cost for s in past_sessions if s.parking_cost)
     avg_cost = total_spent / total_sessions if total_sessions > 0 else 0
-
+    
     # calculating the average duration of the parking sessions
     if total_sessions > 0:
         total_time = sum((s.leaving_time - s.parking_time).total_seconds() for s in past_sessions if s.parking_time and s.leaving_time )
@@ -781,7 +756,7 @@ def user_summary():
         avg_duration = f"{avg_hours}h {avg_minutes}m"
     else:
         avg_duration = "No data available at present , go and park the car !"
-    
+
     # graph data for making doughnut chart!
     locations = {} # store => Kitni baar kis location me park kiya
     spending = {} # store => Kisi location ke hisaab se kitna paisa lagaya
@@ -803,7 +778,7 @@ def user_summary():
     summary = {'total_reservations': total_sessions,
                'total_cost': total_spent,
                'avg_cost': avg_cost,
-               'avg_duration': avg_duration}
+               'avg_duration': avg_duration }
 
     return render_template( 'user_summary.html',
                             summary=summary,
@@ -817,7 +792,5 @@ def user_summary():
 
 if __name__ == '__main__':
     app.run(debug=True) # Debug mode on because I'm still fixing things 
-
-
 
 #================================================================================ END ===========================================================

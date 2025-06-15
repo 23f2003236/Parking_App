@@ -5,9 +5,9 @@
 {% block content %}
 <div class="container">
     <div class="card mb-4">
-        <div class="card-header bg-dark text-white">
+        <div class="card-header bg-dark text-primary">
             {% if spot.status == 'O' %}
-                <h2>Occupied Parking Spot Details</h2>
+                <h3>Occupied Parking Spot Details</h3>
             {% else %}
                 <h2>View Parking Spot</h2>
             {% endif %}
@@ -45,7 +45,7 @@
             
             {% if spot.status == 'O' and reservation %}
                 <hr>
-                <h4>Reservation Details</h4>
+                <h4 class ="text-primary"> Reservation Details</h4>
                 
                 <div class="row mb-3">
                     <div class="col-md-3"><strong>Customer ID:</strong></div>
