@@ -5,6 +5,43 @@
 A comprehensive web application for managing parking lots, reservations, and user accounts. This system allows users to book parking spots, track their parking history, and provides administrators with tools to manage the entire parking system.
 
 
+### Quick Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Rohan-kumar23/MY_FIRST_PROJECT.git
+   cd MY_FIRST_PROJECT
+   ```
+
+2. **Create and activate virtual environment**
+   ```bash
+   python -m venv venv
+   
+   # Windows
+   venv\Scripts\activate
+   
+   # macOS/Linux
+   source venv/bin/activate
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Initialize database**
+   ```bash
+   flask db init
+   flask db migrate -m "Initial migration"
+   flask db upgrade
+   ```
+
+5. **Run the application**
+   ```bash
+   python app.py
+   ```
+
+
 ## 🛠️ Technology Stack
 
 - **Backend**: Flask (Python) with SQLAlchemy ORM

@@ -3,6 +3,8 @@
 {% block title %}{{ 'Add' if not lot else 'Edit' }} Parking Lot - Vehicle Parking System{% endblock %}
 
 {% block content %}
+
+<!-- Add or Edit Parking Lot Form -->
 <h2 class="mb-4">
     <i class="fas fa-{{ 'plus' if not lot else 'edit' }} text-primary me-2"></i>
     {{ 'Add New' if not lot else 'Edit' }} Parking Lot
@@ -49,6 +51,7 @@
         </label>
         <input type="number" min="1" class="form-control" id="number_of_spots" name="number_of_spots" value="{{ lot.number_of_spots if lot else '' }}" placeholder="Enter maximum number of parking spots"required>
         
+        <!-- Display current number of spots if editing an existing lot (optional, can be removed)-->
         {% if lot %}
             <div class="form-text">
                 <i class="fas fa-info-circle text-info me-1"></i>

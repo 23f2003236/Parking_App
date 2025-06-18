@@ -6,12 +6,15 @@
 <div class="container">
     <div class="card mb-4">
         <div class="card-header bg-dark text-primary">
+            
             {% if spot.status == 'O' %}
                 <h3>Occupied Parking Spot Details</h3>
             {% else %}
                 <h2>View Parking Spot</h2>
             {% endif %}
         </div>
+        <!-- Parking Spot Details -->
+
         <div class="card-body">
             <div class="row mb-3">
                 <div class="col-md-3"><strong>ID:</strong></div>
@@ -42,7 +45,9 @@
                     {% endif %}
                 </div>
             </div>
-            
+
+            <!-- Add reservation details if the spot is occupied -->
+
             {% if spot.status == 'O' and reservation %}
                 <hr>
                 <h4 class ="text-primary"> Reservation Details</h4>

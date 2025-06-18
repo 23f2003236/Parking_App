@@ -12,7 +12,7 @@
 </p>
 
 <div class="row">
-    <!-- Section to Book Parking -->
+<!-- Section to Book Parking -->
     <div class="col-md-6 mb-4">
         <h2>
             <i class="fas fa-plus-circle text-primary me-2"></i>
@@ -62,7 +62,7 @@
         </form>
     </div>
 
-    <!-- Active Reservation Section -->
+<!-- Active Reservation Section -->
     <div class="col-md-6 mb-4">
         <h2>
             <i class="fas fa-clock text-warning me-2"></i>
@@ -101,7 +101,12 @@
         {% endif %}
     </div>
 </div>
-
+<br>
+<!-- Available Lots Section -->
+<h2>
+    <i class="fas fa-map-marker-alt text-success me-2"></i>
+    Available Lots
+</h2>
 <div class="row flex-nowrap overflow-auto">
     {% for lot in available_lots %}
         <div class="col-md-3 col-10 me-3">
@@ -127,7 +132,7 @@
         </div>
     {% endfor %}
 </div>
-
+<br>
 
 <!-- Section for Parking History -->
 <div class="row mt-4">

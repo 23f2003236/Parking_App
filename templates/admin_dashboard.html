@@ -33,7 +33,7 @@
             {% if parking_lots %}
                 {% for lot in parking_lots %}
                     <tr>
-                        <td>{{ loop.index }}</td>
+                        <td>{{ lot.id }}</td>
                         <td>{{ lot.location_name }}</td>
                         <td>{{ lot.address }}</td>
                         <td>{{ lot.pin_code }}</td>
@@ -73,7 +73,7 @@
         <div class="col-md-6 mb-4">
             <div class="card">
                 <div class="card-header bg-light text-primary"> 
-                    <!-- we can put bg-primary above  -->
+                    
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">{{ lot.location_name }}</h5>
                         <div>
@@ -86,6 +86,8 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- card body for progress bar and view all -->
                 <div class="card-body">
                     <div class="row">
                         {% set available = lot_availability.get(lot.id, 0) %}

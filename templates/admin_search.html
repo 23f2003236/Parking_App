@@ -16,6 +16,8 @@
                    value="{{ query or '' }}"
                    placeholder="User ID, location name, or email...">
         </div>
+
+        <!-- Dropdown for search type -->
         <div class="col-md-2">
             <label for="search_type" class="form-label">Search In</label>
             <select class="form-select" id="search_type" name="type">
@@ -25,6 +27,8 @@
                 <option value="spots" {% if search_type == 'spots' %}selected{% endif %}>Parking Spots</option>
             </select>
         </div>
+
+        <!-- Search button and clear button -->
         <div class="col-md-3">
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary flex-grow-1">
@@ -40,7 +44,10 @@
     </div>
 </form>
 
+<!-- Display search results -->
 {% if results %}
+
+    <!-- Add a new section for matching lots -->
     {% if results.lots %}
         <h4 class="mt-4">Matching Parking Lots ({{ results.lots | length }})</h4>
         <table class="table table-sm table-striped">
@@ -65,6 +72,7 @@
         </table>
     {% endif %}
 
+    <!-- Add a new section for matching users -->
     {% if results.users %}
         <h4 class="mt-4">Matching Users ({{ results.users | length }})</h4>
         <table class="table table-sm table-striped">
@@ -89,6 +97,7 @@
         </table>
     {% endif %}
 
+    <!-- Add a new section for matching parking spots -->
     {% if results.spots %}
         <h4 class="mt-4">Matching Parking Spots ({{ results.spots | length }})</h4>
         <table class="table table-sm table-striped">

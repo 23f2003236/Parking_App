@@ -54,12 +54,11 @@ text-align: center;
 margin-top: auto;
 }
 
-h1,h2,h3,h4,h5,
-h6 {
-    font-weight: 600;
-    color: var(--gray-800);
-    margin-bottom: 1rem;
-}
+h1,h2,h3,h4,h5,h6 {
+                    font-weight: 600;
+                    color: var(--gray-800);
+                    margin-bottom: 1rem;
+                  }
   
 .page-header {
 margin-bottom: 2rem;
