@@ -1,4 +1,4 @@
-// Add any future JavaScript interactions here.
+// Add any future JavaScript interactions here.(copied from bootstrap websites - https://getbootstrap.com/docs/5.3/getting-started/introduction/)
 console.log("Parking App script loaded.");
 
 // Example: Add confirmation dialog for delete buttons

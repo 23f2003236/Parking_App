@@ -3,12 +3,11 @@
 {% block title %}Parking Spot Details - Admin - Vehicle Parking System{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container-sm py-4">
     <div class="card mb-4">
         <div class="card-header bg-dark text-primary">
-            
             {% if spot.status == 'O' %}
-                <h3>Occupied Parking Spot Details</h3>
+                <h2>Occupied Parking Spot Details</h2>
             {% else %}
                 <h2>View Parking Spot</h2>
             {% endif %}
@@ -74,7 +73,7 @@
                 
                 <div class="row mb-3">
                     <div class="col-md-3"><strong>Est. Parking Cost:</strong></div>
-                    <div class="col-md-9">
+                    <div class="col-md-9 fw-bold text-success">
                         {{ reservation.parking_time|calculate_current_cost(spot.parking_lot.price)|currency }}
                         <small class="text-muted">(Based on current duration)</small>
                     </div>

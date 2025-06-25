@@ -9,15 +9,13 @@
     <div class="row g-3 align-items-end">
         <div class="col-md-4">
             <label for="search_term" class="form-label">What are you looking for?</label>
-            <input type="text" 
-                   class="form-control" 
-                   id="search_term"
+            <input type="text" class="form-control" id="search_term"
                    name="q"
                    value="{{ query or '' }}"
                    placeholder="User ID, location name, or email...">
         </div>
 
-        <!-- Dropdown for search type -->
+        <!-- Dropdown for search type(Default: All) -->
         <div class="col-md-2">
             <label for="search_type" class="form-label">Search In</label>
             <select class="form-select" id="search_type" name="type">

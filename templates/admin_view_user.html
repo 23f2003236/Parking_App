@@ -5,8 +5,10 @@
 {% block content %}
 <div class="container">
     <div class="card mb-4">
-        <div class="card-header bg-secondary text-white">
-            <h2>Parking History for {{ user.username }}</h2>
+        <div class="card-header  text-primary">
+            <h2><strong><i class="fas fa-history text-info me-2"></i></strong>
+                Parking History for {{ user.username }}
+            </h2>
         </div>
 
         <!-- Parking History Table -->
@@ -70,7 +72,7 @@
                 
                 <!-- Summary Section -->
                 <div class="mt-4">
-                    <h4>Summary</h4>
+                    <h4 class="text-primary">Summary</h4>
                     <p><strong>Total Reservations:</strong> {{ parking_history|length }}</p>
                     <p><strong>Total Parking Cost:</strong> ₹{{ "%.2f"|format(total_cost) }}</p>
                     <p><strong>Average Cost per Reservation:</strong> ₹{{ "%.2f"|format(avg_cost) }}</p>

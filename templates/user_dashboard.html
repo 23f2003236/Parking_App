@@ -109,8 +109,8 @@
 </h2>
 <div class="row flex-nowrap overflow-auto">
     {% for lot in available_lots %}
-        <div class="col-md-3 col-10 me-3">
-            <div class="card h-100 {% if lot_availability.get(lot.id, 0) <= 0 %}border-danger{% else %}border-success{% endif %}">
+        <div class="col-md-3 col-sm-6 ">
+            <div class="card h-80 {% if lot_availability.get(lot.id, 0) <= 0 %}border-danger{% else %}border-success{% endif %}">
                 <div class="card-body">
                     <h6 class="card-title">
                         {{ lot.location_name }}

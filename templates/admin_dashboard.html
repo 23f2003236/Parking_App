@@ -7,13 +7,9 @@
 <p>Welcome, {{ session['username'] }}!</p>
 
 
-<div class="tab-content" id="adminTabContent">
-  <div class="tab-pane fade show active" id="lots" role="tabpanel" aria-labelledby="lots-tab">
-    <h2>Parking Lots</h2>
-    <!-- Add Lot Button -->
-    <a href="{{ url_for('add_lot') }}" class="btn btn-success mb-3">
-        Add New Parking Lot
-    </a>
+<div>
+  <div class="tab-pane fade show active" id="lots">
+    <h2 class="mb-4">Parking Lots</h2>
        
     <!-- Table to display existing lots -->
     <table class="table table-striped table-hover">
@@ -26,6 +22,7 @@
                 <th>Price/Hour</th>
                 <th>Total Spots</th>
                 <th>Available Spots</th>
+                <th>Occupied Spots</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -42,6 +39,7 @@
                         </td>
                         <td>{{ lot.number_of_spots }}</td>
                         <td>{{ lot_availability.get(lot.id, 0) }}</td>
+                        <td>{{ lot.number_of_spots - lot_availability.get(lot.id, 0) }}</td>
                         <td>
                             <div class="btn-group" role="group">
                                 <a href="{{ url_for('edit_lot', lot_id=lot.id) }}" class="btn btn-sm btn-outline-warning" title="Edit">
@@ -66,69 +64,10 @@
             {% endif %}
         </tbody>
     </table>
-       
-    <h2>Parking Lots Overview</h2>
-    <div class="row">
-        {% for lot in parking_lots %}
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header bg-light text-primary"> 
-                    
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">{{ lot.location_name }}</h5>
-                        <div>
-                            <span class="badge bg-success">
-                                Available: {{ lot_availability.get(lot.id, 0) }}
-                            </span>
-                            <span class="badge bg-danger">
-                                Occupied: {{ lot.number_of_spots - lot_availability.get(lot.id, 0) }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- card body for progress bar and view all -->
-                <div class="card-body">
-                    <div class="row">
-                        {% set available = lot_availability.get(lot.id, 0) %}
-                        {% set total = lot.number_of_spots %}
-                        {% set occupied = total - available %}
-                                               
-                        <div class="col-12 text-center mb-3">
-                            <div class="progress">
-                                <div class="progress-bar bg-success" role="progressbar"
-                                    {% if total > 0 %}
-                                    style="width: {{ (available / total * 100)|int }}%"
-                                    {% else %}
-                                    style="width: 0%"
-                                    {% endif %}
-                                    aria-valuenow="{{ available }}" aria-valuemin="0" aria-valuemax="{{ total }}">
-                                    {{ available }} Available
-                                </div>
-                                <div class="progress-bar bg-danger" role="progressbar"
-                                    {% if total > 0 %}
-                                    style="width: {{ (occupied / total * 100)|int }}%"
-                                    {% else %}
-                                    style="width: 0%"
-                                    {% endif %}
-                                    aria-valuenow="{{ occupied }}" aria-valuemin="0" aria-valuemax="{{ total }}">
-                                    {{ occupied }} Occupied
-                                </div>
-                            </div>
-                        </div>
-                                               
-                        <div class="col-12 text-center">
-                            <a href="{{ url_for('view_lot_spots', lot_id=lot.id) }}" class="btn btn-outline-primary">
-                                <i class="fas fa-eye me-2"></i>
-                                View All Spots
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
+    <a href="{{ url_for('add_lot') }}" class="btn btn-success mb-3">
+        <i class="fas fa-plus me-2"></i>
+        Add New Parking Lot
+    </a>
   </div>
 </div>
 {% endblock %}

@@ -2,15 +2,15 @@
 
 # Vehicle Parking System
 
-A comprehensive web application for managing parking lots, reservations, and user accounts. This system allows users to book parking spots, track their parking history, and provides administrators with tools to manage the entire parking system.
+A comprehensive web application for managing parking lots, reservations, and user accounts. This system allows users to book first avaible parking spots, track their parking history, and provides administrators with tools to manage the entire parking system.
 
 
 ### Quick Setup
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Rohan-kumar23/MY_FIRST_PROJECT.git
-   cd MY_FIRST_PROJECT
+   git clone https://github.com/Rohan-kumar23/PARKING_App.git
+   cd PARKING_App
    ```
 
 2. **Create and activate virtual environment**
@@ -45,8 +45,8 @@ A comprehensive web application for managing parking lots, reservations, and use
 ## 🛠️ Technology Stack
 
 - **Backend**: Flask (Python) with SQLAlchemy ORM
-- **Database**: SQLite (development) / PostgreSQL (production ready)
-- **Frontend**: Bootstrap 5, HTML5, CSS3, JavaScript ES6+
+- **Database**: SQLite
+- **Frontend**: Bootstrap 5, HTML5, CSS3, JavaScript 
 - **Visualization**: Chart.js for interactive charts
 - **Authentication**: Flask-Session with bcrypt password hashing
 - **Icons**: FontAwesome 6.0+ for modern iconography
